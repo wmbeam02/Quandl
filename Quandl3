@@ -1,0 +1,15 @@
+setwd('C:/Users/Matt/Desktop/R Work/Practice')
+# Source of data: Saudi Fisheries Co. (6050) STOCKNOD-503
+df=read.csv('Quandl3.csv', header=T, stringsAsFactors=F)
+
+df$Date=as.Date(df$Date)
+df$X..Change=NULL
+df$Volume=as.numeric(df$Volume)
+
+# by(df, 1:nrow(df), function(row) dostuff)
+df_sub1=df
+
+for ( i in 1:nrow(df_sub1) ){
+  if (df_sub1[i,6]==0) {
+    df_sub1=df_sub1[-i,]
+  }
