@@ -1,0 +1,5 @@
+# Using quandl's Bank of England database, first attempt at pulling data from the site.
+setwd('C:/Users/Matt/Desktop/R Work/Practice')
+
+df=read.csv('quandL1.csv')
+attach(df)
