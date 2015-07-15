@@ -1,20 +1,17 @@
-setwd('C:/Users/Matt/Desktop/R Work/Practice')
+setwd( 'C:/Users/Matt/Desktop/R Work/Practice' )
 # Source of data: Historical prices for Aventis Pharma Limited (AVENTIS), (ISIN: INE058A01010), National Stock Eschange of India.
-df=read.csv('Quandl2.csv', stringsAsFactors=F, header=F)
+df=read.csv( 'Quandl2.csv', stringsAsFactors=F, header=F )
 
 # Because there wasn't enough header names to match the data to correct columns had to use the row #1 as the names for the columns
 # after reading the table in and then had to delete that first row.
-colnames(df)=df[1,]
-colnames(df)[5:6]=c('Total_Trade_Quantity','Turnover_In_Lakhs')
+names( df )=df[1,]
+names( df )[5:6]=c( 'Trade_Quantity','Turnover_In_Lakhs' )
 df=df[-1,]
 
-# Getting rid of the extra columns 1 way
-# df=df[,(colnames(df) %in% c('Date', 'High', 'Low',	'Close','Total Trade Quantity',	'Turnover (Lakhs)'))]
-
-# Getting rid of the extra columns another way using <!>
-df=df[,!(colnames(df) %in% c('NA', 'NA.1'))]
+# Getting rid of the extra columns another way using <!>, could have just set each to NULL
+df=df[,!( names( df ) %in% c( 'NA', 'NA.1' ))]
 # Removing the <row.names> column is a pain, it doesn't behave like a normal column. Have to use this code to get rid of it, sort of stupid.
-row.names(df)=NULL
+row.names( df )=NULL
 
 # attach(df) - was going to <attach> the df so I didn't have to keep typing the <df$> heading but every time I ran into an issue I commented this line out and 
 # went back to what I know to solve the problem. It seems like a nice tool though.
@@ -22,15 +19,28 @@ row.names(df)=NULL
 # Last 2 original column names (Total Trade Quantity & Turnover (Lakhs)) really messed with R's logic.  Had to take out the spaces and the parenthesis in the 
 # colnames logic in line 8 in order for me to convert the class from char to numeric in line 29:30
 
-df$Date=as.Date(df$Date, format='%Y-%m-%d')
-df$High=as.numeric(df$High)
-df$Low=as.numeric(df$Low)
-df$Close=as.numeric(df$Close)
-df$Total_Trade_Quantity=as.numeric(df$Total_Trade_Quantity)
-df$Turnover_In_Lakhs=as.numeric(df$Turnover_In_Lakhs)
+df$Date=as.Date( df$Date, format='%Y-%m-%d' )
+df$High=as.numeric( df$High )
+df$Low=as.numeric( df$Low )
+df$Close=as.numeric( df$Close )
+df$Trade_Quantity=as.numeric( df$Trade_Quantity )
+df$Turnover_In_Lakhs=as.numeric( df$Turnover_In_Lakhs )
 # TODO: 1.Add a column of row numbers after the fact (cbind perhaps)
+df$Trade_Agg=cut( df$Trade_Quantity, breaks=c( 306, 860, 1825, max( df$Trade_Quantity )))
+levels( df$Trade_Agg )=c( 'Low', 'Medium', 'High' )
+df_sub1=df[which( df$Trade_Agg=='Low' | df$Trade_Agg=='Medium' ), ]
+levels(droplevels( df_sub1 ))
+row.names( df_sub1 )=NULL
+
+library( ggplot2 )
+library( ggthemes )
+
+g=ggplot( df_sub1, )
+# g=g+geom_point( aes( color=Trade_Agg )) + facet_wrap(~Trade_Agg)
+g=g + geom_histogram( aes( x=Trade_Quantity ), binwidth=10, ) + theme_economist()
+g
 
 # Saving the clean df but adding current Date to the filename
-currentDate <- Sys.Date() 
-csvFileName <- paste('Quandl(2)',currentDate,".csv",sep="") 
-write.csv(df, file=csvFileName)
+currentDate <- Sys.Date()  
+csvFileName <- paste( 'Quandl(2)',currentDate,".csv",sep="" ) 
+write.csv( df, file=csvFileName )
