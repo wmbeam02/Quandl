@@ -1,0 +1,29 @@
+# source: Data are from the Fatality Analysis Reporting System (FARS) maintained by the National Traffic Highway Safety Administration. 
+setwd('C:/Users/Matt/Desktop/R Work/Practice')
+df=read.csv('Quandl4.csv', stringsAsFactors=F, header=T)
+df$Year=as.Date(df$Year)
+colnames(df)[5]='Percent.of.Fatalities'
+for (i in 1:nrow(df)){
+  # Don't forget the square brackets on the LEFT side of the equation or you end up with 1 value for all rows
+#   df$Calculated.Percentages[i]=(df[i,4]/df[i,3])
+  df$Calculated.Percentages[i]=(df$Alcohol.Related.Fatalities[i]/df$Traffic.Fatalities[i])
+}
+df$Percent.of.Fatalities=NULL
+# To run correlations the column variables, need to either make a new table with no other classes or subset the cor function to 
+# look at only those columns from a none subsetted table.
+df_corr=df[,-1]
+# Example of a Pearson correlation without using a new df 
+cor( df[,2:5] )
+# Example of a Spearman & Kendall correlation with a new subset df 
+cor( df_corr, method='spearman' )
+cor( df_corr,method='kendall'  )
+
+library( ggplot2 )
+library( ggthemes )
+
+g=ggplot( df ) + geom_line( aes( x=Year, y=Alcohol.Related.Fatalities )) + theme_economist_white() + theme( axis.text.x=element_text( angle=90 ))
+g=g + labs( title='Alcohol Traffic Deaths Over Time', y='Alcohol Related Fatalities')
+g
+
+
+write.csv(df, 'Quandl4_Revised')
