@@ -1,0 +1,39 @@
+# Source: Historical prices for Stel Holdings Limited (STEL), (ISIN: INE577L01016), National Stock Exchange of India.
+
+setwd('C:/Users/Matt/Desktop/R Work/Practice')
+df=read.csv('Quandl5.csv', stringsAsFactors=F)
+for ( i in 1:length( df )){
+  if( i==1 ){
+    df[,i]=as.Date( df[,i] )
+  }
+  else {
+    df[ ,i]=as.numeric( df[ ,i] )
+  }
+}
+# Default name for column 8 is ugly
+names(df)[8]='Turnover.In.Lacs'
+# Removing any NAs
+df=df[complete.cases( df ), ]
+# Correlation fishing
+cor( df[2:8] )
+cor( df[2:8], method='spearman' )
+cor( df[2:8], method='kendall' )
+# Subsetting 
+df_sub1=df[which( df$Total.Trade.Quantity > 1000), ]
+df_sub1$Vol.Cat=cut(df_sub1$Total.Trade.Quantity, breaks=c( 1001, 3928, 11653, max( df_sub1$Total.Trade.Quantity ) ))
+levels( df_sub1$Vol.Cat )=c( 'Low', 'Medium', 'High')
+row.names(df_sub1)=NULL
+
+cor( df_sub1[2:8] )
+library( lubridate )
+df_sub1$Year=year( df_sub1$Date )
+
+library( ggplot2 )
+library( ggthemes )
+
+g=ggplot( df_sub1, aes( x=Year, y=Total.Trade.Quantity )) + geom_point( aes( color=Vol.Cat )) + facet_wrap( ~Vol.Cat)
+g=g + labs( y='Quantity Traded')
+g
+
+
+write.csv(df_sub1, 'Quandl5_Revised.csv')
