@@ -6,10 +6,19 @@ df$Date=as.Date(df$Date)
 df$X..Change=NULL
 df$Volume=as.numeric(df$Volume)
 
-# by(df, 1:nrow(df), function(row) dostuff)
-df_sub1=df
+# check out this for complete.case examples, very helpful! http://stackoverflow.com/questions/4862178/remove-rows-with-nas-in-data-frame
+df=df[complete.cases(df),]
+row.names(df)=NULL
+df$Volume_Category=cut(df$Volume, breaks=c(-1, 237016, ((1528748+237016)/2), 1528748, max(df$Volume)))
+levels(df$Volume_Category)=c('Low', 'Medium', 'High', 'Abnormal')
+df_sub1=df[ which( df$Volume_Category == 'Low' | df$Volume_Category == 'Abnormal' ) , ]
+#df_sub1=subset(df, Volume_Category=='Low')
+# Need to remember to drop levels on subsets, they carry levels with them from previous df that usually aren't relevant in the new structure
+levels(droplevels(df_sub1))
+library( ggplot2 )
+library( ggthemes )
+g=ggplot( df, aes( x=Date, y=Change )) + geom_point( aes( color=Volume_Category )) + facet_wrap( ~Volume_Category ) + theme_wsj()
+g
 
-for ( i in 1:nrow(df_sub1) ){
-  if (df_sub1[i,6]==0) {
-    df_sub1=df_sub1[-i,]
-  }
+write.csv(df, 'Quandl3_revised')
+
